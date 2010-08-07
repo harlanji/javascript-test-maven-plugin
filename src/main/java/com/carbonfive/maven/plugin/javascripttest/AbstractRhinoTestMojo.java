@@ -62,12 +62,14 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
         Scriptable scope = context.initStandardObjects( global );
 
 
-		final MyReports foo = new MyReports() {
-					@Override
-					public void saySomething(String something) {
-						getLog().info("SAY SOMETHING: " + something);
-					}
-				};
+		final ReportManager foo = new ReportManager() {
+
+			@Override
+			public void log(Boolean result, String message) {
+				getLog().info("TEST [" + result + "]: " + message);
+			}
+
+		};
 
 		scope.put("$report", scope, Context.toObject(foo, scope));
 
@@ -98,8 +100,37 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     }
   }
 
-  public abstract class MyReports {
-	public abstract void saySomething(String something);
+  // this is the QUnit interface mocked. it's a good interface.
+  public class ReportManager {
+	public void log(Boolean result, String message) {
+
+	}
+
+	public void moduleStart(String name, Object testEnvironment) {
+
+	}
+
+	public void moduleDone(String name, Long failures, Long total) {
+
+	}
+
+	public void testStart(String name, Object testEnvironment) {
+		log(true, "testStart: " + name);
+	}
+
+	public void testDone(String name, Long failures, Long total) {
+
+	}
+
+	// before any tests start.
+	public void begin() {
+		
+	}
+
+	// after all tests are completed.
+	public void done(Long failures, Long total) {
+		
+	}
   }
   
   private String[] collectSuites( String[] includes, String[] excludes )

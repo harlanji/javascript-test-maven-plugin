@@ -17,10 +17,8 @@
 
 
 /*
-load("classpath:/screwunit/screw.builder.js");
-load("classpath:screwunit/screw.matchers.js");
-load("classpath:screwunit/screw.events.js");
-load("classpath:screwunit/screw.behaviors.js");
+load("classpath:jquery.js");
+load("classpath:qunit.js");
 */
 
 Envjs({
@@ -29,8 +27,11 @@ Envjs({
 		'text/envjs' : false,
 		'' : true
 	},
+
+
 	javaEnabled: false
 });
 
-
-//$report.saySomething( "whazzzupp!?" );
+jQuery.each(['log', 'testStart', 'testDone', 'moduleStart', 'moduleDone', 'begin', 'done'], function(i, v) {
+	QUnit[v] = jQuery.proxy($report[v], $report);
+});
