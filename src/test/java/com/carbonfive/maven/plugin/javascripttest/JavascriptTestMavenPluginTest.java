@@ -27,7 +27,7 @@ public class JavascriptTestMavenPluginTest
   {
     File testPom = new File( getBasedir(), "src/test/resources/test-project-1/pom_pass.xml" );
 
-    JavascriptTestMavenPlugin mojo = (JavascriptTestMavenPlugin) lookupMojo( "javascript-test", testPom );
+    ScrewUnitTestMojo mojo = (ScrewUnitTestMojo) lookupMojo( "javascript-test", testPom );
 
     mojo.setBasedir( new File( getBasedir(), "src/test/resources/test-project-1" ) );
 
@@ -60,7 +60,7 @@ public class JavascriptTestMavenPluginTest
   {
     File testPom = new File( getBasedir(), "src/test/resources/test-project-1/pom_fail.xml" );
 
-    JavascriptTestMavenPlugin mojo = (JavascriptTestMavenPlugin) lookupMojo( "javascript-test", testPom );
+    ScrewUnitTestMojo mojo = (ScrewUnitTestMojo) lookupMojo( "javascript-test", testPom );
 
     mojo.setBasedir( new File( getBasedir(), "src/test/resources/test-project-1" ) );
     assertNotNull( mojo );

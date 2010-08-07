@@ -11,12 +11,8 @@ import java.io.*;
 import java.util.*;
 import static java.lang.String.format;
 
-/**
- * @component
- * @goal javascript-test
- * @phase test
- */
-public class JavascriptTestMavenPlugin extends AbstractMojo
+
+public abstract class AbstractRhinoTestMojo extends AbstractMojo
 {
   private static final String LOCATE_SCRIPTS_FUNCTION = "return jtmp_locate_scripts();";
   private static final String LOCATE_CSS_FUNCTION = "return jtmp_locate_css();";
