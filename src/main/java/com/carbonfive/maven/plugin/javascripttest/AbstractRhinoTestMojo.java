@@ -14,29 +14,27 @@ import static java.lang.String.format;
 
 public abstract class AbstractRhinoTestMojo extends AbstractMojo
 {
-  private static final String LOCATE_SCRIPTS_FUNCTION = "return jtmp_locate_scripts();";
-  private static final String LOCATE_CSS_FUNCTION = "return jtmp_locate_css();";
-  private static final String TESTS_RUN_FUNCTION = "return jtmp_failure_messages()";
+
 
   /**
    * @parameter
    */
-  private String[] includes;
+  protected String[] includes;
 
   /**
    * @parameter
    */
-  private String[] excludes;
+  protected String[] excludes;
 
   /**
    * @parameter
    */
-  private boolean reimportScripts = false;
+  protected boolean reimportScripts = false;
 
   /**
    * @parameter expression="${basedir}
    */
-  private File basedir;
+  protected File basedir;
 
   public void execute() throws MojoExecutionException, MojoFailureException
   {
@@ -65,13 +63,10 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
 
         // Establish window scope with dom and all imported and inline scripts executed
         RhinoHelper.execClasspathScript(context, scope, "env.rhino.js");
-        RhinoHelper.execClasspathScript(context, scope, "javascript-test-maven-plugin.js");
 
-        RhinoHelper.exec( "Envjs(\"" + suite + "\");", "suite.html", context, scope );
-        importScripts(context, scope, suite);
+		injectSuiteCode( suite, context, scope );
 
-        // Trigger test execution
-        RhinoHelper.exec( "jQuery(window).trigger('load');Envjs.wait();", "start", context, scope );
+
 
         // examine and report on results
         SuiteReport report = writeReports(suiteName, suite, context, scope, System.currentTimeMillis() - startTime);
@@ -154,32 +149,7 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     junitReportWriter.close();
   }
 
-  private void generateHumanReadableReport(String suiteName, File suite, Context context, Scriptable scope)
-    throws IOException
-  {
-    File reportFile = new File( getBasedir(), "target/screw-unit/" + suiteName.replace(File.separator,"."));
-    reportFile.getParentFile().mkdirs();
-    FileWriter writer = new FileWriter( reportFile );
-    writer.write("<html><head><title>Screw-Unit test report for " + suiteName +
-      "</title><style type=\"text/css\">" +
-      inlineCss(context, scope, suite) +
-      "</style></head><body>"
-      + RhinoHelper.execStringFunction("return jQuery('body').html()","jQuery('body').html()", context, scope) +
-      "</body></html>");
-    writer.close();
-  }
 
-  private SuiteReport parseSuiteReport(Context context, Scriptable scope)
-  {
-    NativeArray tests = RhinoHelper.execNativeArrayFunction(TESTS_RUN_FUNCTION, "tests run", context, scope);
-    SuiteReport report = new SuiteReport();
-    for ( int i=0; i < tests.getLength(); i++ )
-    {
-      NativeObject test = (NativeObject) tests.get(i, tests);
-      report.addTest( (String) test.get("test",test), (String) test.get("error",test) );
-    }
-    return report;
-  }
 
   public File getBasedir()
   {
@@ -201,53 +171,16 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     return context;
   }
 
-  private void importScripts(Context context, Scriptable scope, File suite)
-    throws IOException
-  {
-    Set<String> executed = new HashSet<String>();
-    Set<String> toExecute = new LinkedHashSet<String>();
-    toExecute.addAll(Arrays.asList(RhinoHelper.execStringArrayFunction("return jtmp_locate_scripts()", "locate scripts", context, scope)));
-    while ( toExecute.size() > executed.size() )
-    {
-      for ( String script : toExecute )
-      {
-        if ( ! executed.contains(script) )
-        {
-          if ( script.startsWith("file:") )
-            RhinoHelper.execScriptFile(context, scope, new File(suite.getParentFile(), script.substring("file:".length())) );
-          else
-            context.compileString(script, "inline script", 1, null ).exec(context,scope);
 
-          executed.add( script );
 
-          if ( reimportScripts )
-          {
-            toExecute.clear();
-            toExecute.addAll(Arrays.asList(RhinoHelper.execStringArrayFunction(LOCATE_SCRIPTS_FUNCTION, "locate scripts", context, scope)));
-            break;
-          }
-        }
-      }
-    }
-  }
 
-  private String inlineCss(Context context, Scriptable scope, File suite)
-    throws IOException
-  {
-    StringBuilder buf = new StringBuilder();
-    char[] cb = new char[4096];
-    for ( String source : RhinoHelper.execStringArrayFunction( LOCATE_CSS_FUNCTION, "locate css", context, scope ) )
-    {
-      Reader in = new FileReader( new File(suite.getParentFile(), source) );
-      for ( int c = in.read(cb,0,4096); c >= 0; c = in.read(cb,0,4096) )
-        buf.append( cb, 0, c );
-      in.close();
-      buf.append( "\n" );
-    }
-    return buf.toString();
-  }
 
-  private class SuiteReport
+	protected abstract void injectSuiteCode(File suite, Context context, Scriptable scope) throws Exception;
+	protected abstract SuiteReport parseSuiteReport(Context context, Scriptable scope);
+	protected abstract void generateHumanReadableReport(String suiteName, File suite, Context context, Scriptable scope) throws IOException;
+
+
+  protected class SuiteReport
   {
     private List<TestReport> tests = new ArrayList<TestReport>();
     private int errors;
@@ -287,7 +220,7 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     }
   }
 
-  private class TestReport
+  protected class TestReport
   {
     String test;
     String error;
@@ -299,7 +232,7 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     }
   }
 
-  private class XMLRenderer
+  protected class XMLRenderer
   {
     private LinkedList<String> elements = new LinkedList<String>();
     private boolean open;
