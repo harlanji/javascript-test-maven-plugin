@@ -31,3 +31,6 @@ Envjs({
 	},
 	javaEnabled: false
 });
+
+
+$report.saySomething( "whazzzupp!?" );

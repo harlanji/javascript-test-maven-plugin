@@ -61,6 +61,17 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
         Context context  = createAndInitializeContext( global );
         Scriptable scope = context.initStandardObjects( global );
 
+
+		final MyReports foo = new MyReports() {
+					@Override
+					public void saySomething(String something) {
+						getLog().info("SAY SOMETHING: " + something);
+					}
+				};
+
+		scope.put("$report", scope, Context.toObject(foo, scope));
+
+
         // Establish window scope with dom and all imported and inline scripts executed
         RhinoHelper.execClasspathScript(context, scope, "env.rhino.js");
 
@@ -85,6 +96,10 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
     {
       throw new MojoExecutionException("This plugin has experienced an unexpected error.  Please take some time to report the problem", e);
     }
+  }
+
+  public abstract class MyReports {
+	public abstract void saySomething(String something);
   }
   
   private String[] collectSuites( String[] includes, String[] excludes )
