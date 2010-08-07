@@ -1,4 +1,7 @@
-
+/**
+ * Find all scripts to execute and return an array of
+ * their paths / source.
+ */
 function jtmp_locate_scripts() {
   var scripts=[], tags=document.getElementsByTagName('script');
   for (var i=0,tag; tag=tags[i]; i++ ) {

@@ -64,7 +64,7 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
         // Establish window scope with dom and all imported and inline scripts executed
         RhinoHelper.execClasspathScript(context, scope, "env.rhino.js");
 
-		injectSuiteCode( suite, context, scope );
+		runSuite( context, scope, suite );
 
 
 
@@ -118,7 +118,7 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
 
     SuiteReport report = parseSuiteReport(context, scope);
 
-    generateHumanReadableReport(suiteName, suite, context, scope);
+    generateHumanReadableReport(context, scope, suite, suiteName);
 
     generateJUnitStyleReport(suiteName, executionTime, report);
 
@@ -175,9 +175,9 @@ public abstract class AbstractRhinoTestMojo extends AbstractMojo
 
 
 
-	protected abstract void injectSuiteCode(File suite, Context context, Scriptable scope) throws Exception;
+	protected abstract void runSuite(Context context, Scriptable scope, File suite) throws Exception;
 	protected abstract SuiteReport parseSuiteReport(Context context, Scriptable scope);
-	protected abstract void generateHumanReadableReport(String suiteName, File suite, Context context, Scriptable scope) throws IOException;
+	protected abstract void generateHumanReadableReport(Context context, Scriptable scope, File suite, String suiteName) throws IOException;
 
 
   protected class SuiteReport
